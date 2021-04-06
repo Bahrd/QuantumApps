@@ -1,6 +1,7 @@
-﻿/// # A basic triple polarizer experiment emulation
-/// Usage example [Windows Terminal or the other .NET Core 3.1 compatible shell]: 
-/// The command sequence:       'dotnet build --no-restore --nologo; dotnet run --no-build --all-photons 4096 --second-polariser true'
+﻿/// # A Q# implementaion of the classic (Dirac's) triple polarizer experiment 
+///
+/// Usage example (Windows Terminal or the other .NET Core 3.1 compatible shell): 
+/// The command: 'dotnet build --no-restore --nologo; dotnet run --no-build --all-photons 4096 --second-polariser true --theta 45'
 /// should approximately yield: '481 of 4096... That's about 12% of lucky photons!'
 namespace TPR // A scratchpad area...
 {
