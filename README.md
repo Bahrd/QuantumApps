@@ -1,5 +1,5 @@
 # Quantanamera (aka Quantum Apps)
 
 ## Q# implementations of some quantum algorithms will appear here...
-- Three polarisers emulation: [ThreePolaRisers.qs](./ThreePolaRisers/program.qs)
+- Dirac's three polarizers experiment: [ThreePolaRisers](../../blob/master/ThreePolaRisers/Program.qs)
 
