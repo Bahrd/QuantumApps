@@ -20,14 +20,20 @@ namespace TPR // A scratchpad area...
         let _2π = 2.*PI();
         return DrawRandomDouble(-_2π, _2π);
     }
-    operation θxθyθz(): TripleDouble
+    operation θxyz(): TripleDouble
     {
         return TripleDouble(DRD(), DRD(), DRD());
+    }
+    operation Rxyz(θ: TripleDouble, ϕ: Qubit): Unit
+    {
+        let (θx, θy, θz) = θ!;
+        // ... with a little help of a ¿bad taste? one-liner!
+        let (_, _, _) = (Rx(θx, ϕ), Ry(θy, ϕ), Rz(θz, ϕ));  // 'R*(θ*, ϕ)' is equivalent to 'R(Pauli*, θ*, ϕ);'                                
     }
 }
 namespace TPR // Area 51...
 {
-    // A three polarisers experiment (A three obstacle photon racing...) implementation
+    // A three polarisers experiment (kinda like a photon steeplechase...) implementation
     operation TriplePolariser(t4t: ThreePeat) : Unit
     {   
         let (AllPhotons, θ, SecondPolariser) = t4t!;
@@ -37,26 +43,26 @@ namespace TPR // Area 51...
             for i in 1..AllPhotons
             {
                 // Making a photon polarisation a (qu)bit random...
-                // ... with a little help of two ¿bad taste? one-liners!
-                let (θx, θy, θz) = (θxθyθz())!;
-                let (_, _, _) = (Rx(θx, ϕ), Ry(θy, ϕ), Rz(θz, ϕ));  // Where e.g. 'Rx(θx, ϕ)' is equivalent to 'R(PauliX, θx, ϕ);'                                
-                let ρ = θ * PI()/90.;                               // Degree to radian conversion of the polariser's angle
-                // The first pass through a polariser...
-                set PhotonPL = M(ϕ);                                // Or: 'set PhotonPL = Measure([PauliZ], [ϕ]);'
+                Rxyz(θxyz(), ϕ);
+                //Preparing the polarisers...
+                let ρ = θ * PI()/90.;   // Degree to radian conversion of the polariser's angle
+                
+                // The first attempt to pass through a polariser...
+                set PhotonPL = M(ϕ);    // Or: 'set PhotonPL = Measure([PauliZ], [ϕ]);'
                 if(PhotonPL == One)
                 {
-                    // A virtual rotation of θ°
+                    // A virtual rotation of θ° (in this way we model rotation of a polariser)
                     Ry(ρ, ϕ);    
-                    // A pass throught a(n optional) second polariser...
+                    // An attempt to pass throught a(n optional) second polariser...
                     if(SecondPolariser)
                     {            
                         set PhotonPL = M(ϕ);
                     }
                     if(PhotonPL == One)
                     {
-                        // A virtual rotation of θ°
+                        // A virtual rotation of θ° (of another polariser)
                         Ry(ρ, ϕ);                
-                        // The final (third (or second)) pass...
+                        // The final (third (or second)) attempt...
                         set PhotonPL = M(ϕ);
                         if(PhotonPL == One)
                         {
