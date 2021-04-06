@@ -1,0 +1,7 @@
+{
+    "editor.tokenColorCustomizations": null,
+    "files.associations": 
+    {
+    "*.qs": "qsharp"
+    }
+}
