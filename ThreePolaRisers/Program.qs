@@ -34,9 +34,9 @@ namespace TPR // A scratchpad area...
 namespace TPR // Area 51...
 {
     // A three polarisers experiment (kinda like a photon steeplechase...) implementation
-    operation TriplePolariser(t4t: ThreePeat) : Unit
+    operation TriplePolariser(thp: ThreePeat) : Unit
     {   
-        let (AllPhotons, θ, SecondPolariser) = t4t!;
+        let (AllPhotons, θ, SecondPolariser) = thp!;
         use ϕ = Qubit()
         {    
             mutable (MacPhotons, PhotonPL) = (0b0, Zero);
