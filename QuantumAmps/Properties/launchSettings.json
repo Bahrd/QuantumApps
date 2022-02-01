@@ -1,8 +1,7 @@
 {
   "profiles": {
     "QuantumApp": {
-      "commandName": "Project",
-      "commandLineArgs": "--all-photons 1024"
+      "commandName": "Project"
     }
   }
 }

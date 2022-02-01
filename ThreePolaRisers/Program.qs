@@ -40,7 +40,7 @@ namespace TPR // Area 51...
         use ϕ = Qubit()
         {    
             mutable (MacPhotons, PhotonPL) = (0b0, Zero);
-            for i in 1..AllPhotons
+            for _ in 1..AllPhotons
             {
                 // Making a photon polarisation a (qu)bit random...
                 Rxyz(θxyz(), ϕ);

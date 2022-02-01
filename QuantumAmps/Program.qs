@@ -17,8 +17,7 @@ namespace DJ // A scratchpad area...
         let ρ = β > 0.0 ? 2.0*ArcCos(α) | 2.0*ArcSin(α) - PI();
         Ry(ρ, ψ);
     }
-
-    operation twoqub() : Bool
+        operation twoqub() : Bool
     {   
         use (ψ, ϕ) = (Qubit(), Qubit()) // Allocate a qubit pair
         {    
@@ -86,15 +85,46 @@ namespace DJ // A scratchpad area...
             return m;
         }
     }
+
+}
+namespace DJ
+{
+    operation oracle() : Bool
+    {   
+        use (ϕ, ψ) = (Qubit(), Qubit()) // Allocate a qubit pair
+        {    
+            // See: https://en.wikipedia.org/wiki/Controlled_NOT_gate#/media/File:CNOT-QuantumComputation.png
+            X(ψ);
+            Message("Flip ψ");
+            DumpMachine(());
+            H(ϕ); H(ψ);
+            Message("Hadamard ϕ & ψ");
+            DumpMachine(());
+            CNOT(ϕ, ψ);
+            Message("Entangle ϕ & ψ");
+            DumpMachine(());
+            H(ϕ); 
+            Message("Hadamard ϕ");
+            DumpMachine(());
+            
+            // Housekeeping...
+            let b = M(ϕ) == One;
+            Message($"Measure of {ϕ} yields {b}");
+            DumpMachine(());
+            Reset(ϕ); Reset(ψ); 
+            Message("Rise and clean");
+            DumpMachine(());
+            return b;
+		}
+    }
 }
 namespace DJ 
 {
     @EntryPoint()
-    operation EntanglementTest(AllPhotons: Int) : Unit 
+    operation EntanglementTest() : Unit 
     {
-        let b = twoqub();
-        //let qft = qqfftt(bits, bit);
-        //Message($"QFT = {qft}");
+        let b = oracle();
+        Message($"|ϕ> = {b}");
     }
 }
     
