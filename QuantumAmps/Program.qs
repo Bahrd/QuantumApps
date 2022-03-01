@@ -34,7 +34,6 @@ namespace DJ // A scratchpad area...
             return m == n;
         }
     }
-
     operation enttst(bits: Int) : Bool
     {   
         use ψ = Qubit[bits] // Allocate a qubit
@@ -91,30 +90,31 @@ namespace DJ
 {
     operation oracle() : Bool
     {   
-        use (ϕ, ψ) = (Qubit(), Qubit()) // Allocate a qubit pair
+        use ψ = Qubit() // Allocate a qubit
         {    
             // See: https://en.wikipedia.org/wiki/Controlled_NOT_gate#/media/File:CNOT-QuantumComputation.png
             X(ψ);
-            Message("Flip ψ");
+            mutable m = M(ψ) == One;
+            Message($"Measure of {ψ} yields {m}");
+            X(ψ);
             DumpMachine(());
-            H(ϕ); H(ψ);
-            Message("Hadamard ϕ & ψ");
+            set m = M(ψ) == One;
             DumpMachine(());
-            CNOT(ϕ, ψ);
-            Message("Entangle ϕ & ψ");
+            Message($"Measure of {ψ} yields {m}");
             DumpMachine(());
-            H(ϕ); 
-            Message("Hadamard ϕ");
+            H(ψ);
             DumpMachine(());
-            
-            // Housekeeping...
-            let b = M(ϕ) == One;
-            Message($"Measure of {ϕ} yields {b}");
+            set m = M(ψ) == One;
+            Message($"Measure of {ψ} yields {m}");
+                     
             DumpMachine(());
-            Reset(ϕ); Reset(ψ); 
-            Message("Rise and clean");
+            H(ψ);
+            Message("Hadamard ψ");
             DumpMachine(());
-            return b;
+            set m = Measure([PauliX], [ψ]) == One;
+            Message($"Measure of {ψ}  yields {m}");
+            DumpMachine(());
+            return m;
 		}
     }
 }
@@ -123,7 +123,8 @@ namespace DJ
     @EntryPoint()
     operation EntanglementTest() : Unit 
     {
-        let b = oracle();
+        //let b = oracle();
+        let b = enttst(2);
         Message($"|ϕ> = {b}");
     }
 }

@@ -106,7 +106,6 @@
 
 
     // Task 2.6. Putting it all together 
-    @EntryPoint()
     operation T26_BB84Protocol_Reference () : Unit {
         let threshold = 99;
 
@@ -146,8 +145,9 @@
 
     
     // Task 3.2. Catch the eavesdropper
+    @EntryPoint()
     operation T32_BB84ProtocolWithEavesdropper_Reference () : Unit {
-        let threshold = 90;
+        let threshold = 50;
 
         use qs = Qubit[20];
         // 1. Choose random basis and bits to encode
