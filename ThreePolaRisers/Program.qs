@@ -1,8 +1,9 @@
-﻿/// # A Q# implementaion of the classic (Dirac's) triple polarizer experiment 
+﻿/// # A Q# implementaion of the classic (Dirac's) triple polarizer experiment
 ///
-/// Usage example (Windows Terminal or the other .NET Core 3.1 compatible shell): 
+/// Usage example (Windows Terminal or the other .NET Core 3.1 compatible shell):
 /// The command: 'dotnet build --no-restore --nologo; dotnet run --no-build --all-photons 4096 --second-polariser true --theta 45'
 /// should approximately yield: '481 of 4096... That's about 12% of lucky photons!'
+
 namespace TPR // A scratchpad area...
 {
     open Microsoft.Quantum.Intrinsic;
@@ -28,17 +29,15 @@ namespace TPR // A scratchpad area...
     {
         let (θx, θy, θz) = θ!;
         // ... with a little help of a ¿bad taste? one-liner!
-        let (_, _, _) = (Rx(θx, ϕ), Ry(θy, ϕ), Rz(θz, ϕ));  // 'R*(θ*, ϕ)' is equivalent to 'R(Pauli*, θ*, ϕ);'                                
+        let (_, _, _) = (Rx(θx, ϕ), Ry(θy, ϕ), Rz(θz, ϕ));  // 'R*(θ*, ϕ)' is equivalent to 'R(Pauli*, θ*, ϕ);'
     }
-}
-namespace TPR // Area 51...
-{
     // A three polarisers experiment (kinda like a photon steeplechase...) implementation
-    operation TriplePolariser(thp: ThreePeat) : Unit
-    {   
+    operation TriplePolariser(thp: ThreePeat) : Double
+    {
         let (AllPhotons, θ, SecondPolariser) = thp!;
+        mutable quantile = 0.0;
         use ϕ = Qubit()
-        {    
+        {
             mutable (MacPhotons, PhotonPL) = (0b0, Zero);
             for _ in 1..AllPhotons
             {
@@ -46,22 +45,22 @@ namespace TPR // Area 51...
                 Rxyz(θxyz(), ϕ);
                 //Preparing the polarisers...
                 let ρ = θ * PI()/90.;   // Degree to radian conversion of the polariser's angle
-                
+
                 // The first attempt to pass through a polariser...
                 set PhotonPL = M(ϕ);    // Or: 'set PhotonPL = Measure([PauliZ], [ϕ]);'
                 if(PhotonPL == One)
                 {
                     // A virtual rotation of θ° (in this way we model rotation of a polariser)
-                    Ry(ρ, ϕ);    
+                    Ry(ρ, ϕ);
                     // An attempt to pass throught a(n optional) second polariser...
                     if(SecondPolariser)
-                    {            
+                    {
                         set PhotonPL = M(ϕ);
                     }
                     if(PhotonPL == One)
                     {
                         // A virtual rotation of θ° (of another polariser)
-                        Ry(ρ, ϕ);                
+                        Ry(ρ, ϕ);
                         // The final (third (or second)) attempt...
                         set PhotonPL = M(ϕ);
                         if(PhotonPL == One)
@@ -70,20 +69,24 @@ namespace TPR // Area 51...
                         }
                     }
                 }
-                Reset(ϕ); 
+                Reset(ϕ);
             }
-            let quantile =  DoubleAsStringWithFormat(100. * IntAsDouble(MacPhotons)/IntAsDouble(AllPhotons), "N0");
+            set quantile = 100.0 * IntAsDouble(MacPhotons)/IntAsDouble(AllPhotons);
             Message($"{MacPhotons} of {AllPhotons}... That's about {quantile}% of lucky photons!");
         }
+        return quantile;
     }
 }
 
-namespace TPR 
+namespace TPR
 {
+    open Microsoft.Quantum.Math;
     @EntryPoint()
-    operation ThreePolarisersExperiment(AllPhotons: Int, theta: Double, SecondPolariser: Bool) : Unit 
-    {
+    operation ThreePolarisersExperiment() : Double
+    {   let AllPhotons = 1000;
+        let theta = 45.0;
+        let SecondPolariser = true;
         let tuple = ThreePeat(AllPhotons, theta, SecondPolariser);
-        TriplePolariser(tuple);
+        return TriplePolariser(tuple);
     }
 }

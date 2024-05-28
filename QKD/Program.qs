@@ -1,182 +1,53 @@
-﻿namespace Quantum.QKD 
-{
-// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT license.
-
-//////////////////////////////////////////////////////////////////////
-// This file contains reference solutions to all tasks.
-// The tasks themselves can be found in Tasks.qs file.
-// but feel free to look up the solution if you get stuck.
-//////////////////////////////////////////////////////////////////////
-    
-    open Microsoft.Quantum.Arrays;
-    open Microsoft.Quantum.Measurement;
-    open Microsoft.Quantum.Canon;
-    open Microsoft.Quantum.Diagnostics;
+﻿namespace Bell {
     open Microsoft.Quantum.Intrinsic;
-    open Microsoft.Quantum.Convert;
-    open Microsoft.Quantum.Math;
-    open Microsoft.Quantum.Random;
-    
-    
-    //////////////////////////////////////////////////////////////////
-    // Part I. Preparation
-    //////////////////////////////////////////////////////////////////
-    
-    // Task 1.1. Diagonal polarization
-    operation DiagonalBasis_Reference (qs : Qubit[]) : Unit is Adj {
-        ApplyToEachA(H, qs);
-    }
+    open Microsoft.Quantum.Canon;
 
+       operation SetQubitState(desired : Result, target : Qubit) : Unit {
+           if desired != M(target) {
+               X(target);
+           }
+       }
 
-    // Task 1.2. Equal superposition.
-    operation EqualSuperposition_Reference (q : Qubit) : Unit {
-        // The easiest way to do this is to convert the state of the qubit to |+⟩
-        H(q);
-        // Other possible solutions include X(q); H(q); to prepare |-⟩ state,
-        // and anything that adds any relative phase to one of the states.
-    }
-
-    //////////////////////////////////////////////////////////////////
-    // Part II. BB84 Protocol
-    //////////////////////////////////////////////////////////////////
-
-    // Task 2.1. Generate random array
-    operation RandomArray_Reference (N : Int) : Bool[] {
-        mutable array = new Bool[N];
-
-        for i in 0 .. N - 1 {
-            set array w/= i <- DrawRandomBool(0.5);
-        }
-
-        return array;
-    }
-
-
-    // Task 2.2. Prepare Alice's qubits
-    operation PrepareAlicesQubits_Reference (qs : Qubit[], bases : Bool[], bits : Bool[]) : Unit is Adj {
-        for i in 0 .. Length(qs) - 1 {
-            if (bits[i]) {
-                X(qs[i]);
-            }
-            if (bases[i]) {
-                H(qs[i]);
-            }
-        }
-    }
-
-
-    // Task 2.3. Measure Bob's qubits
-    operation MeasureBobsQubits_Reference (qs : Qubit[], bases : Bool[]) : Bool[] {
-        for i in 0 .. Length(qs) - 1 {
-            if (bases[i]) {
-                H(qs[i]);
-            }
-        }
-        return ResultArrayAsBoolArray(MultiM(qs));
-    }
-
-
-    // Task 2.4. Generate the shared key!
-    function GenerateSharedKey_Reference (basesAlice : Bool[], basesBob : Bool[], measurementsBob : Bool[]) : Bool[] {
-        // If Alice and Bob used the same basis, they will have the same value of the bit.
-        // The shared key consists of those bits.
-        mutable key = new Bool[0];
-        for (a, b, bit) in Zipped3(basesAlice, basesBob, measurementsBob) {
-            if (a == b) {
-                set key += [bit];
-            }
-        }
-        return key;
-    }
-
-
-    // Task 2.5. Check if error rate was low enough
-    function CheckKeysMatch_Reference (keyAlice : Bool[], keyBob : Bool[], errorRate : Int) : Bool {
-        let N = Length(keyAlice);
-        mutable mismatchCount = 0;
-        for i in 0 .. N - 1 {
-            if (keyAlice[i] != keyBob[i]) {
-                set mismatchCount += 1;
-            }
-        }
-
-        return IntAsDouble(mismatchCount) / IntAsDouble(N) <= IntAsDouble(errorRate) / 100.0;
-    }
-
-
-    // Task 2.6. Putting it all together 
-    operation T26_BB84Protocol_Reference () : Unit {
-        let threshold = 99;
-
-        use qs = Qubit[10];
-        // 1. Choose random basis and bits to encode
-        let basesAlice = RandomArray_Reference(Length(qs));
-        let bitsAlice = RandomArray_Reference(Length(qs));
-        
-        // 2. Alice prepares her qubits
-        PrepareAlicesQubits_Reference(qs, basesAlice, bitsAlice);
-        
-        // 3. Bob chooses random basis to measure in
-        let basesBob = RandomArray_Reference(Length(qs));
-
-        // 4. Bob measures Alice's qubits
-        let bitsBob = MeasureBobsQubits_Reference(qs, basesBob);
-
-        // 5. Generate shared key
-        let keyAlice = GenerateSharedKey_Reference(basesAlice, basesBob, bitsAlice);
-        let keyBob = GenerateSharedKey_Reference(basesAlice, basesBob, bitsBob);
-
-        // 6. Ensure at least the minimum percentage of bits match
-        if (CheckKeysMatch_Reference(keyAlice, keyBob, threshold)) {
-            Message($"Successfully generated keys {keyAlice}/{keyBob}");
-        }
-    }
-
-
-    //////////////////////////////////////////////////////////////////
-    // Part III. Eavesdropping
-    //////////////////////////////////////////////////////////////////
-
-    // Task 3.1. Eavesdrop!
-    operation Eavesdrop_Reference (q : Qubit, basis : Bool) : Bool {
-        return ResultAsBool(Measure([basis ? PauliX | PauliZ], [q]));
-    }
-
-    
-    // Task 3.2. Catch the eavesdropper
     @EntryPoint()
-    operation T32_BB84ProtocolWithEavesdropper_Reference () : Unit {
-        let threshold = 50;
+    operation TestBellState() : (Int, Int, Int, Int) {
+        mutable numOnesQ1 = 0;
+        mutable numOnesQ2 = 0;
+        let count = 1000;
+        let initial = Zero;
 
-        use qs = Qubit[20];
-        // 1. Choose random basis and bits to encode
-        let basesAlice = RandomArray_Reference(Length(qs));
-        let bitsAlice = RandomArray_Reference(Length(qs));
-        
-        // 2. Alice prepares her qubits
-        PrepareAlicesQubits_Reference(qs, basesAlice, bitsAlice);
-        
-        // Eve eavesdrops on all qubits, guessing the basis at random
-        for q in qs {
-            let n = Eavesdrop_Reference(q, DrawRandomBool(0.5));
+        // allocate the qubits
+        use (q1, q2) = (Qubit(), Qubit());
+        for test in 1..count {
+            SetQubitState(initial, q1);
+            SetQubitState(Zero, q2);
+
+            H(q1);
+            CNOT(q1, q2);      // Add the CNOT operation after the H operation
+
+            // measure each qubit
+            let resultQ1 = M(q1);
+            let resultQ2 = M(q2);
+
+            // Count the number of 'Ones' returned:
+            if resultQ1 == One {
+                set numOnesQ1 += 1;
+            }
+            if resultQ2 == One {
+                set numOnesQ2 += 1;
+            }
         }
 
-        // 3. Bob chooses random basis to measure in
-        let basesBob = RandomArray_Reference(Length(qs));
+        // reset the qubits
+        SetQubitState(Zero, q1);
+        SetQubitState(Zero, q2);
 
-        // 4. Bob measures Alice's qubits'
-        let bitsBob = MeasureBobsQubits_Reference(qs, basesBob);
 
-        // 5. Generate shared key
-        let keyAlice = GenerateSharedKey_Reference(basesAlice, basesBob, bitsAlice);
-        let keyBob = GenerateSharedKey_Reference(basesAlice, basesBob, bitsBob);
+        // Display the times that |0> is returned, and times that |1> is returned
+        Message($"Q1 - Zeros: {count - numOnesQ1}");
+        Message($"Q1 - Ones: {numOnesQ1}");
+        Message($"Q2 - Zeros: {count - numOnesQ2}");
+        Message($"Q2 - Ones: {numOnesQ2}");
+        return (count - numOnesQ1, numOnesQ1, count - numOnesQ2, numOnesQ2 );
 
-        // 6. Ensure at least the minimum percentage of bits match
-        if (CheckKeysMatch_Reference(keyAlice, keyBob, threshold)) {
-            Message($"Successfully generated keys {keyAlice}/{keyBob}");
-        } else {
-            Message($"Caught an eavesdropper, discarding the keys {keyAlice}/{keyBob}");
-        }
     }
 }
