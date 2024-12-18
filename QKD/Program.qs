@@ -48,6 +48,5 @@
         Message($"Q2 - Zeros: {count - numOnesQ2}");
         Message($"Q2 - Ones: {numOnesQ2}");
         return (count - numOnesQ1, numOnesQ1, count - numOnesQ2, numOnesQ2 );
-
     }
 }

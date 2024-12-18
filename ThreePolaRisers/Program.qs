@@ -83,7 +83,7 @@ namespace TPR
     open Microsoft.Quantum.Math;
     @EntryPoint()
     operation ThreePolarisersExperiment() : Double
-    {   let AllPhotons = 1000;
+    {   let AllPhotons = 0x400;
         let theta = 45.0;
         let SecondPolariser = true;
         let tuple = ThreePeat(AllPhotons, theta, SecondPolariser);
