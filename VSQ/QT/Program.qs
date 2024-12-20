@@ -1,4 +1,4 @@
-namespace vsq
+namespace QVT
 {
 
     open Microsoft.Quantum.Canon;
