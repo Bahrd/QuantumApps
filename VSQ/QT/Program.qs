@@ -7,28 +7,38 @@ namespace QVT
     @EntryPoint()
     operation VanillaTeleport() : Result
     {
-        use (q0, q1, q2) = (Qubit(), Qubit(), Qubit());
+        let teleportation = true;
+
+        use (msg, Alice, Bob) = (Qubit(), Qubit(), Qubit());
+
+        // A: Her qubit can be in any state, it seems...
+        let π = Microsoft.Quantum.Math.PI();
+        Rx(π/3.0, Alice); Ry(π/4.0, Alice); Rz(π/2.0, Alice);
 
         // A: Turn superposition into entanglement
-        H(q1); CNOT(q1, q2);
+        H(Alice); CNOT(Alice, Bob);
+
 
         // Me: Set the state to be teleported
-        //let π = Microsoft.Quantum.Math.PI(); Rx(π/4.0, q0);
-        H(q0);
-        // A: Bell measurement
-        CNOT(q0, q2); H(q0);
-        let (m1, m2) = (M(q1) == One, M(q0) == One);
+        I(msg);
 
-        // A: Transmit (m1, m2) to Bob (e.g. via SMS)
+        // A: Bell measurement, a.k.a. entanglement swapping
+        if(teleportation)
+        {
+            CNOT(msg, Alice); H(msg);
+            let (A, B) = (M(Alice) == One, M(msg) == One);
 
-        // B: Recover the state
-        if (m1) { X(q2); }
-        if (m2) { Z(q2); }
-        // B: Measure a teleported qubit state (if necessary)
-        let Bob = M(q2);
-        Message($"Bob's outcome: {Bob}");
+            // A: Transmit (A, B) to Bob (e.g. via SMS)
+            Message($"2 bits 2 Bob: {(A, B)}");
+            // B: Recover the state
+            if (A) { X(Bob); }
+            if (B) { Z(Bob); }
+        }
+        // B: Measure a qubit state (whether or not it was teleported)
+        let m = M(Bob);
+        Message($"Bob's message: {m}");
 
-        Reset(q0); Reset(q1); Reset(q2);
-        return Bob;
+        Reset(msg); Reset(Alice); Reset(Bob);
+        return m;
     }
 }
